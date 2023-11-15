@@ -6,6 +6,7 @@ Supported utilities:
 
 - Consolidated Edison (ConEd)
   - Orange & Rockland Utilities (ORU)
+- Duquesne Light
 - Enmax Energy
 - Evergy
 - Exelon subsidiaries
