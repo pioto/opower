@@ -1,6 +1,7 @@
 """Duquesne Light"""
 
 import re
+import logging
 from typing import Optional
 import urllib.parse
 
@@ -9,6 +10,8 @@ import aiohttp
 from ..const import USER_AGENT
 from ..exceptions import InvalidAuth
 from .base import UtilityBase
+
+_LOGGER = logging.getLogger(__file__)
 
 class DuquesneLight(UtilityBase):
     """Duquesne Light"""
@@ -69,6 +72,7 @@ class DuquesneLight(UtilityBase):
             result = await resp.text()
         match = re.search('"OPowerToken": "([^"]+)"', result)
         if not match:
+            _LOGGER.debug("Unable to find OPowerToken: %s", result)
             raise InvalidAuth("Could not extract OPowerToken")
         opowertoken = match.group(1)
         return opowertoken
