@@ -1,9 +1,13 @@
 """Duquesne Light"""
 
+import re
 from typing import Optional
+import urllib.parse
 
 import aiohttp
 
+from ..const import USER_AGENT
+from ..exceptions import InvalidAuth
 from .base import UtilityBase
 
 class DuquesneLight(UtilityBase):
@@ -40,4 +44,31 @@ class DuquesneLight(UtilityBase):
 
         :raises InvalidAuth: if login information is incorrect
         """
-        raise NotImplementedError
+   
+        # First, get logged in so we have a valid AuthToken cookie
+        login_url = "https://www.duquesnelight.com/login/login"
+        async with session.post(
+            "https://www.duquesnelight.com/login/login",
+            data={
+                'Username': username,
+                'Password': password,
+            },
+            headers={"User-Agent": USER_AGENT},
+            raise_for_status=True,
+        ) as resp:
+            result = await resp.json()
+            if "Messages" in result:
+                raise InvalidAuth(', '.join(result["Messages"]))
+
+        # Then, visit a page that has the OPower token embedded
+        async with session.get(
+            "https://www.duquesnelight.com/energy-money-savings/my-electric-use",
+            headers={"User-Agent": USER_AGENT},
+            raise_for_status=True,
+        ) as resp:
+            result = await resp.text()
+        match = re.search('"OPowerToken": "([^"]+)"', result)
+        if not match:
+            raise InvalidAuth("Could not extract OPowerToken")
+        opowertoken = match.group(1)
+        return opowertoken
