@@ -2,8 +2,9 @@
 
 import re
 import logging
+import random
+import time
 from typing import Optional
-import urllib.parse
 
 import aiohttp
 
@@ -50,6 +51,7 @@ class DuquesneLight(UtilityBase):
    
         # First, get logged in so we have a valid AuthToken cookie
         login_url = "https://www.duquesnelight.com/login/login"
+        _LOGGER.debug("Logging in to %s", login_url)
         async with session.post(
             "https://www.duquesnelight.com/login/login",
             data={
@@ -64,8 +66,10 @@ class DuquesneLight(UtilityBase):
                 raise InvalidAuth(', '.join(result["Messages"]))
 
         # Then, visit a page that has the OPower token embedded
+        usage_url = "https://www.duquesnelight.com/energy-money-savings/my-electric-use"
+        _LOGGER.debug("Visiting usage page: %s", usage_url)
         async with session.get(
-            "https://www.duquesnelight.com/energy-money-savings/my-electric-use",
+            usage_url,
             headers={"User-Agent": USER_AGENT},
             raise_for_status=True,
         ) as resp:
